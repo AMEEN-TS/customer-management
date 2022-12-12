@@ -2,17 +2,20 @@ const Customers = require("../models/customerModel");
 const Address = require("../models/addressModel");
 const bcrypt = require("bcrypt");
 const { trusted } = require("mongoose");
+const cloudinary = require("../utils/cloudinary");
 
 
 module.exports.register = async (req, res) => {
     try {
+        
+        const result = await cloudinary.uploader.upload(req.file.path)
+        console.log(result);
         const password = req.body.password;
         const saltRounds = 10;
         const salt = await bcrypt.genSalt(saltRounds);
-    
         const hashPassword = await bcrypt.hash(password, salt);
         req.body.password = hashPassword;
-        const userdata = new Customers(req.body);
+        const userdata = new Customers({...req.body,image:result.url});
         await userdata.save();
         const addressdata = new Address({ ...req.body, customerId: userdata._id });
         await addressdata.save();
