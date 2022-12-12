@@ -6,7 +6,12 @@ const { trusted } = require("mongoose");
 
 module.exports.register = async (req, res) => {
     try {
-
+        const password = req.body.password;
+        const saltRounds = 10;
+        const salt = await bcrypt.genSalt(saltRounds);
+    
+        const hashPassword = await bcrypt.hash(password, salt);
+        req.body.password = hashPassword;
         const userdata = new Customers(req.body);
         await userdata.save();
         const addressdata = new Address({ ...req.body, customerId: userdata._id });
